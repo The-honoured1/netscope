@@ -24,8 +24,17 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
     if (!ip) return null;
 
     // 2. Geolocation (REAL DATA)
-    const geoRes = await fetch(`http://ip-api.com/json/${ip}`);
-    const geoData = await geoRes.json();
+    let geoData: any = {};
+    try {
+      const geoRes = await fetch(`http://ip-api.com/json/${ip}`, {
+        signal: AbortSignal.timeout(2000) // 2 second timeout
+      });
+      if (geoRes.ok) {
+        geoData = await geoRes.json();
+      }
+    } catch (e) {
+      console.warn(`Geolocation failed for ${ip}, continuing without location data.`);
+    }
 
     // 3. Service Discovery (Real-time HTTP Check)
     const services: Service[] = [];

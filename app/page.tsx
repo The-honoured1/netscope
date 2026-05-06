@@ -22,7 +22,7 @@ export default async function LandingPage() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
       
       {/* Header */}
-      <header className="relative px-4 md:px-8 py-6 flex justify-between items-center z-10">
+      <header className="relative px-4 md:px-8 py-6 flex justify-between items-center z-50">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-emerald-500 rounded flex items-center justify-center text-black font-bold">NS</div>
           <span className="text-xl font-bold tracking-tighter text-white">NETSCOPE</span>

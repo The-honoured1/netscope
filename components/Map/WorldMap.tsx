@@ -48,7 +48,7 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
           ref={globeRef}
           width={dimensions.width}
           height={dimensions.height}
-          globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+          globeImageUrl="https://unpkg.com/three-globe/example/img/earth-dark.jpg"
           backgroundColor="#050505"
           pointsData={pointsData}
           pointAltitude="size"
