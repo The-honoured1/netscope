@@ -1,65 +1,102 @@
-import Image from "next/image";
+import React from 'react';
+import { SearchBar } from '@/components/Search/SearchBar';
+import { Shield, Database, Globe, Zap, Cpu, Lock } from 'lucide-react';
+import { getStats } from '@/lib/searchEngine';
+import Link from 'next/link';
 
-export default function Home() {
+export default async function LandingPage() {
+  const stats = await getStats();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-[#050505] text-zinc-300 font-mono relative overflow-hidden flex flex-col">
+      {/* Background Effects */}
+      <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+      
+      {/* Header */}
+      <header className="px-8 py-6 flex justify-between items-center z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-emerald-500 rounded flex items-center justify-center text-black font-bold">NS</div>
+          <span className="text-xl font-bold tracking-tighter text-white">NETSCOPE</span>
+        </div>
+        <nav className="flex gap-8 text-[10px] uppercase tracking-widest font-bold">
+          <Link href="/search" className="text-zinc-500 hover:text-emerald-400 transition-colors">DATABASE</Link>
+          <Link href="#" className="text-zinc-500 hover:text-emerald-400 transition-colors">API_DOCS</Link>
+          <Link href="#" className="text-zinc-500 hover:text-emerald-400 transition-colors">MONITOR</Link>
+        </nav>
+      </header>
+
+      {/* Hero Section */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 relative z-10 -mt-20">
+        <div className="text-center mb-12 space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-[10px] text-emerald-500 font-bold tracking-tighter uppercase mb-4 animate-pulse">
+            <Zap size={10} /> SYSTEM_STATUS: OPERATIONAL_V2.1
+          </div>
+          <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-none">
+            NET<span className="text-emerald-500">SCOPE</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="max-w-xl mx-auto text-zinc-500 text-sm md:text-base leading-relaxed">
+            The next-generation internet asset intelligence platform. 
+            Discover, index, and enrich global infrastructure in real-time.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <SearchBar />
+
+        <div className="mt-12 flex flex-wrap justify-center gap-4 text-[10px] text-zinc-600">
+          <span>POPULAR: </span>
+          {stats.tags.map(tag => (
+            <Link key={tag} href={`/search?q=${tag}`} className="text-zinc-400 hover:text-emerald-500 transition-colors underline decoration-zinc-800">
+              #{tag}
+            </Link>
+          ))}
+        </div>
+
+        {/* Stats Grid */}
+        <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl w-full border-t border-zinc-900 pt-12">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white tracking-tighter">{stats.total}M+</div>
+            <div className="text-[10px] text-zinc-600 uppercase mt-1">Assets Indexed</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-emerald-500 tracking-tighter">{stats.countries}</div>
+            <div className="text-[10px] text-zinc-600 uppercase mt-1">Countries</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-red-500 tracking-tighter">{stats.highRisk}</div>
+            <div className="text-[10px] text-zinc-600 uppercase mt-1">Active Threats</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white tracking-tighter">0.04s</div>
+            <div className="text-[10px] text-zinc-600 uppercase mt-1">Query Latency</div>
+          </div>
         </div>
       </main>
+
+      {/* Footer Features */}
+      <div className="grid grid-cols-1 md:grid-cols-3 border-t border-zinc-900 bg-black/50 backdrop-blur-sm z-10">
+        <div className="p-8 border-r border-zinc-900 flex items-start gap-4">
+          <Cpu className="text-emerald-500 shrink-0" size={24} />
+          <div>
+            <h4 className="text-xs font-bold text-white mb-1 uppercase">Automated Enrichment</h4>
+            <p className="text-[10px] text-zinc-500 leading-relaxed">Advanced header analysis and fingerprinting for every discovered node.</p>
+          </div>
+        </div>
+        <div className="p-8 border-r border-zinc-900 flex items-start gap-4">
+          <Globe className="text-emerald-500 shrink-0" size={24} />
+          <div>
+            <h4 className="text-xs font-bold text-white mb-1 uppercase">Relationship Mapping</h4>
+            <p className="text-[10px] text-zinc-500 leading-relaxed">Cluster assets based on SSL certificates, IP proximity, and DNS patterns.</p>
+          </div>
+        </div>
+        <div className="p-8 flex items-start gap-4">
+          <Shield className="text-emerald-500 shrink-0" size={24} />
+          <div>
+            <h4 className="text-xs font-bold text-white mb-1 uppercase">Threat Intelligence</h4>
+            <p className="text-[10px] text-zinc-500 leading-relaxed">Integrated risk scoring and malware signature detection at scale.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
