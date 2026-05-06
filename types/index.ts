@@ -22,7 +22,6 @@ export interface IntelligenceMetadata {
   serverType?: string;
   os?: string;
   tags: string[];
-  riskScore: number; // 0-100
   clusterId?: string;
 }
 

@@ -50,9 +50,6 @@ export default async function AssetDetailPage({
             <div>
               <h1 className="text-lg font-bold text-white flex items-center gap-3">
                 {asset.ip}
-                <TagBadge variant={asset.intelligence.riskScore > 70 ? 'danger' : 'success'}>
-                  RISK: {asset.intelligence.riskScore}
-                </TagBadge>
               </h1>
               <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
                 ASSET_INTEL_ID: {asset.id}

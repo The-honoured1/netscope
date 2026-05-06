@@ -79,7 +79,7 @@ export async function getStats() {
   return {
     total: sessionIndex.length,
     liveCount: enriched.length,
-    highRisk: enriched.filter(a => a.intelligence.riskScore > 20).length,
+    services: enriched.reduce((acc, a) => acc + a.services.length, 0),
     countries: countries.length,
     tags: Array.from(new Set(enriched.flatMap(a => a.intelligence.tags))).slice(0, 10)
   };

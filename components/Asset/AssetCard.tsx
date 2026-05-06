@@ -5,17 +5,12 @@ import { Asset } from '@/types';
 import { TagBadge } from '../ui/TagBadge';
 
 export const AssetCard = ({ asset }: { asset: Asset }) => {
-  const getRiskColor = (score: number) => {
-    if (score > 70) return 'text-red-500';
-    if (score > 30) return 'text-amber-500';
-    return 'text-emerald-500';
-  };
+    if (!asset) return null;
 
   return (
     <Link href={`/asset/${asset.id}`} className="block group">
       <div className="bg-zinc-900/30 border border-zinc-800 hover:border-zinc-700 p-4 rounded-lg transition-all hover:bg-zinc-900/50 relative overflow-hidden">
-        {/* Risk Score Indicator */}
-        <div className={`absolute top-0 right-0 w-1 h-full ${asset.intelligence.riskScore > 70 ? 'bg-red-500' : asset.intelligence.riskScore > 30 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+        <div className="absolute top-0 right-0 w-1 h-full bg-zinc-800 group-hover:bg-emerald-500 transition-colors" />
         
         <div className="flex justify-between items-start mb-3">
           <div>
@@ -28,8 +23,8 @@ export const AssetCard = ({ asset }: { asset: Asset }) => {
             </p>
           </div>
           <div className="text-right">
-            <div className={`text-xs font-mono font-bold ${getRiskColor(asset.intelligence.riskScore)}`}>
-              RISK: {asset.intelligence.riskScore}
+            <div className="text-xs font-mono font-bold text-zinc-400">
+              CLUSTER ID
             </div>
             <div className="text-[10px] text-zinc-600 font-mono">
               {asset.asn}

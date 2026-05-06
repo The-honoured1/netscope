@@ -71,8 +71,8 @@ export default async function LandingPage() {
             <div className="text-[10px] text-zinc-600 uppercase mt-1">Countries</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-red-500 tracking-tighter">{stats.highRisk}</div>
-            <div className="text-[10px] text-zinc-600 uppercase mt-1">High Risk</div>
+            <div className="text-2xl font-bold text-amber-500 tracking-tighter">{stats.services}</div>
+            <div className="text-[10px] text-zinc-600 uppercase mt-1">Services</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-white tracking-tighter">LIVE</div>

@@ -101,8 +101,8 @@ export default async function SearchPage({
                 <span className="text-white">{stats.countries}</span>
               </div>
               <div className="flex justify-between">
-                <span>HIGH RISK</span>
-                <span className="text-red-500">{stats.highRisk}</span>
+                <span>SERVICES</span>
+                <span className="text-amber-500">{stats.services}</span>
               </div>
             </div>
           </div>
@@ -120,10 +120,10 @@ export default async function SearchPage({
               <Link href="/graph" className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded border border-zinc-800 text-[10px] text-zinc-400 font-bold uppercase tracking-widest transition-all">
                 <Share2 size={12} className="text-emerald-500" /> GRAPH_MODE
               </Link>
-              <button className="p-1.5 hover:bg-zinc-900 rounded border border-zinc-800 text-zinc-500 hover:text-zinc-300">
+              <Link href="/search" className="p-1.5 bg-zinc-800 rounded border border-zinc-700 text-zinc-300">
                 <Database size={14} />
-              </button>
-              <button className="p-1.5 hover:bg-zinc-900 rounded border border-zinc-800 text-zinc-500 hover:text-zinc-300">
+              </Link>
+              <button disabled title="Map View (Coming Soon)" className="p-1.5 rounded border border-zinc-800 text-zinc-600 opacity-50 cursor-not-allowed">
                 <Globe size={14} />
               </button>
             </div>

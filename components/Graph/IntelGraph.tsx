@@ -62,13 +62,15 @@ export const IntelGraph = ({ data }: { data: any }) => {
     ctx.stroke();
 
     // Text Label
-    const label = node.label;
-    const fontSize = 12 / globalScale;
-    ctx.font = `${fontSize}px monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = isSelected ? '#ffffff' : '#888888';
-    ctx.fillText(label, node.x, node.y + size / 1.5 + 2);
+    if (globalScale >= 1.5 || isSelected || isHovered) {
+      const label = node.label;
+      const fontSize = 12 / globalScale;
+      ctx.font = `${fontSize}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = isSelected ? '#ffffff' : '#888888';
+      ctx.fillText(label, node.x, node.y + size / 1.5 + 2);
+    }
   };
 
   return (

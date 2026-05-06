@@ -95,8 +95,7 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
       services,
       intelligence: {
         serverType,
-        tags,
-        riskScore: tags.includes('ssl-enabled') ? 5 : 25
+        tags
       },
       relatedAssetIds: []
     };

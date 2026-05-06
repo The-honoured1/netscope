@@ -122,7 +122,14 @@ export function buildGraphData(assets: Asset[]): GraphData {
   });
 
   // Deduplicate links
-  const uniqueLinks = Array.from(new Set(links.map(l => JSON.stringify(l)))).map(s => JSON.parse(s));
+  const linkMap = new Map<string, GraphEdge>();
+  links.forEach(l => {
+    const key = `${l.source}-${l.target}-${l.type}`;
+    if (!linkMap.has(key)) {
+      linkMap.set(key, l);
+    }
+  });
+  const uniqueLinks = Array.from(linkMap.values());
 
   return {
     nodes: Array.from(nodesMap.values()),
