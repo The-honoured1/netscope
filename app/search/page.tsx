@@ -1,17 +1,19 @@
 import React from 'react';
 import { SearchBar } from '@/components/Search/SearchBar';
 import { AssetCard } from '@/components/Asset/AssetCard';
-import { searchAssets } from '@/lib/searchEngine';
+import { searchAssets, getStats } from '@/lib/searchEngine';
 import { Filter, Database, Globe, Shield, Activity, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }) {
-  const query = searchParams.q || '';
+  const { q } = await searchParams;
+  const query = q || '';
   const results = await searchAssets(query);
+  const stats = await getStats();
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-mono">
@@ -69,22 +71,21 @@ export default async function SearchPage({
 
           <div className="p-4 rounded-lg border border-zinc-800 bg-zinc-900/20">
             <h4 className="text-[10px] text-zinc-500 font-bold mb-4 uppercase flex items-center gap-2">
-              <Activity size={12} className="text-emerald-500" /> LIVE_ACTIVITY
+              <Activity size={12} className="text-emerald-500" /> RECENT_DISCOVERY
             </h4>
             <div className="space-y-4">
-              {[
-                { event: 'PORT_SCAN', target: '192.168.1.12', time: '2s' },
-                { event: 'SSL_EXPIRED', target: '45.33.2.11', time: '12s' },
-                { event: 'NEW_ASSET', target: '104.21.32.1', time: '1m' },
-              ].map((ev, i) => (
+              {results.slice(0, 3).map((asset, i) => (
                 <div key={i} className="text-[9px] border-l border-zinc-800 pl-2 py-0.5">
                   <div className="flex justify-between text-zinc-500">
-                    <span>{ev.event}</span>
-                    <span>{ev.time}</span>
+                    <span>DISCOVERY</span>
+                    <span>{asset.intelligence.serverType}</span>
                   </div>
-                  <div className="text-emerald-500/80">{ev.target}</div>
+                  <div className="text-emerald-500/80 truncate">{asset.ip}</div>
                 </div>
               ))}
+              {results.length === 0 && (
+                <div className="text-[9px] text-zinc-600 italic">No recent activity</div>
+              )}
             </div>
           </div>
 
@@ -93,15 +94,15 @@ export default async function SearchPage({
             <div className="space-y-2 text-[10px]">
               <div className="flex justify-between">
                 <span>TOTAL NODES</span>
-                <span className="text-white">1,402,119</span>
+                <span className="text-white">{stats.total}</span>
               </div>
               <div className="flex justify-between">
-                <span>NEW ASSETS</span>
-                <span className="text-white">12,041 / HR</span>
+                <span>COUNTRIES</span>
+                <span className="text-white">{stats.countries}</span>
               </div>
               <div className="flex justify-between">
-                <span>THREATS DETECTED</span>
-                <span className="text-red-500">4,129</span>
+                <span>HIGH RISK</span>
+                <span className="text-red-500">{stats.highRisk}</span>
               </div>
             </div>
           </div>

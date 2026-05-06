@@ -55,7 +55,18 @@ export async function searchAssets(query: string = '', filters: { serverType?: s
 
 export async function getAssetById(id: string): Promise<Asset | null> {
   await seed();
-  const asset = sessionIndex.find(a => a.id === id);
+  let asset = sessionIndex.find(a => a.id === id);
+  
+  if (!asset && id.startsWith('live-')) {
+    const ip = id.replace('live-', '').replace(/-/g, '.');
+    if (ip.match(/^(\d{1,3}\.){3}\d{1,3}$/)) {
+      asset = await discoverAsset(ip);
+      if (asset) {
+        sessionIndex.push(asset);
+      }
+    }
+  }
+
   if (!asset) return null;
   return enrichAsset(asset, sessionIndex);
 }
@@ -63,11 +74,13 @@ export async function getAssetById(id: string): Promise<Asset | null> {
 export async function getStats() {
   await seed();
   const enriched = sessionIndex.map(a => enrichAsset(a, sessionIndex));
+  const countries = [...new Set(enriched.map(a => a.location.countryCode))];
+  
   return {
-    total: 1402, // Representing a larger pool
+    total: sessionIndex.length,
     liveCount: enriched.length,
-    highRisk: enriched.filter(a => a.intelligence.riskScore > 50).length,
-    countries: [...new Set(enriched.map(a => a.location.countryCode))].length,
+    highRisk: enriched.filter(a => a.intelligence.riskScore > 20).length,
+    countries: countries.length,
     tags: Array.from(new Set(enriched.flatMap(a => a.intelligence.tags))).slice(0, 10)
   };
 }

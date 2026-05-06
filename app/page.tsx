@@ -63,7 +63,7 @@ export default async function LandingPage() {
         {/* Stats Grid */}
         <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl w-full border-t border-zinc-900 pt-12">
           <div className="text-center">
-            <div className="text-2xl font-bold text-white tracking-tighter">{stats.total}M+</div>
+            <div className="text-2xl font-bold text-white tracking-tighter">{stats.total}</div>
             <div className="text-[10px] text-zinc-600 uppercase mt-1">Assets Indexed</div>
           </div>
           <div className="text-center">
@@ -72,11 +72,11 @@ export default async function LandingPage() {
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-red-500 tracking-tighter">{stats.highRisk}</div>
-            <div className="text-[10px] text-zinc-600 uppercase mt-1">Active Threats</div>
+            <div className="text-[10px] text-zinc-600 uppercase mt-1">High Risk</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-white tracking-tighter">0.04s</div>
-            <div className="text-[10px] text-zinc-600 uppercase mt-1">Query Latency</div>
+            <div className="text-2xl font-bold text-white tracking-tighter">LIVE</div>
+            <div className="text-[10px] text-zinc-600 uppercase mt-1">Discovery</div>
           </div>
         </div>
       </main>

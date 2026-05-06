@@ -23,9 +23,10 @@ import { notFound } from 'next/navigation';
 export default async function AssetDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const asset = await getAssetById(params.id);
+  const { id } = await params;
+  const asset = await getAssetById(id);
 
   if (!asset) {
     notFound();
