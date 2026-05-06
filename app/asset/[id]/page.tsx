@@ -41,24 +41,24 @@ export default async function AssetDetailPage({
     <div className="min-h-screen bg-[#020202] text-zinc-300 font-mono selection:bg-emerald-500/30">
       {/* Header */}
       <header className="border-b border-zinc-900 bg-black/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/search" className="text-zinc-500 hover:text-white transition-colors">
               <Search size={20} />
             </Link>
             <div className="h-6 w-px bg-zinc-800" />
             <div>
-              <h1 className="text-lg font-bold text-white flex items-center gap-3">
+              <h1 className="text-base md:text-lg font-bold text-white flex items-center gap-3">
                 {asset.ip}
               </h1>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+              <p className="text-[10px] text-zinc-500 uppercase tracking-widest break-all">
                 ASSET_INTEL_ID: {asset.id}
               </p>
             </div>
           </div>
-          <div className="flex gap-4">
-             <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-black text-xs font-bold rounded flex items-center gap-2 transition-all">
-                <Database size={14} /> EXPORT_DATA
+          <div className="flex gap-4 ml-auto">
+             <button className="px-3 md:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-black text-xs font-bold rounded flex items-center gap-2 transition-all">
+                <Database size={14} /> <span className="hidden sm:inline">EXPORT_DATA</span>
              </button>
           </div>
         </div>

@@ -7,12 +7,18 @@ import { discoverAsset } from './discovery';
 let sessionIndex: Asset[] = [];
 
 // Seed the index with some real verified assets to start
-const SEED_TARGETS = ['google.com', 'cloudflare.com', 'github.com', '8.8.8.8'];
+const SEED_TARGETS = [
+  'google.com', 'cloudflare.com', 'github.com', '8.8.8.8',
+  'bbc.co.uk', 'baidu.com', 'amazon.co.jp', 'spiegel.de',
+  'lemonde.fr', 'globo.com', 'sydney.edu.au', 'nic.in',
+  'aljazeera.net', 'yandex.ru', 'samsung.com', 'spotify.com'
+];
 
 async function seed() {
   if (sessionIndex.length > 0) return;
-  for (const target of SEED_TARGETS) {
-    const asset = await discoverAsset(target);
+  const promises = SEED_TARGETS.map(target => discoverAsset(target));
+  const results = await Promise.all(promises);
+  for (const asset of results) {
     if (asset) sessionIndex.push(asset);
   }
 }

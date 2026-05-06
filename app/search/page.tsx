@@ -19,26 +19,26 @@ export default async function SearchPage({
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-mono">
       {/* Header */}
       <header className="border-b border-zinc-900 bg-black/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4 flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
             <div className="w-8 h-8 bg-emerald-500 rounded flex items-center justify-center text-black font-bold">NS</div>
             <span className="text-xl font-bold tracking-tighter text-white group-hover:text-emerald-400 transition-colors">NETSCOPE</span>
           </Link>
-          <div className="flex-1 max-w-2xl px-8">
+          <div className="w-full md:flex-1 md:max-w-2xl order-3 md:order-none">
             <SearchBar initialValue={query} />
           </div>
-          <div className="flex items-center gap-6 text-[10px] uppercase tracking-widest text-zinc-500">
+          <div className="flex items-center gap-6 text-[10px] uppercase tracking-widest text-zinc-500 shrink-0">
             <div className="flex flex-col items-end">
               <span className="text-emerald-500">STATUS: ACTIVE</span>
-              <span>INDEX: LIVE_DISCOVERY</span>
+              <span className="hidden sm:inline">INDEX: LIVE_DISCOVERY</span>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-6 py-8 flex gap-8">
+      <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-8 flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters */}
-        <aside className="w-64 flex-shrink-0 space-y-8">
+        <aside className="w-full lg:w-64 flex-shrink-0 space-y-8">
           <div>
             <h3 className="text-xs font-bold text-zinc-500 mb-4 flex items-center gap-2">
               <Filter size={14} /> FILTERS
