@@ -2,7 +2,7 @@ import React from 'react';
 import { SearchBar } from '@/components/Search/SearchBar';
 import { AssetCard } from '@/components/Asset/AssetCard';
 import { searchAssets } from '@/lib/searchEngine';
-import { Filter, Database, Globe, Shield } from 'lucide-react';
+import { Filter, Database, Globe, Shield, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function SearchPage({
