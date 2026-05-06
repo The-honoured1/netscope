@@ -17,23 +17,13 @@ NetScope is a high-performance internet asset intelligence platform designed to 
 - **Icons**: Lucide React
 - **Animations**: Framer Motion
 
-## Project Structure
+## Real-Time Discovery Engine (No Mock Data)
 
-```text
-/app
-  /api              # Route handlers for search and asset data
-  /search           # Search results page with filtering
-  /asset/[id]       # Deep dive asset detail page
-/components
-  /ui               # Shared UI primitives (TagBadge, etc.)
-  /Search           # Search-related components
-  /Asset            # Asset display components
-/lib
-  /enrichment.ts    # Intelligence and tagging logic
-  /searchEngine.ts  # Mock search engine and indexing
-  /mockData.ts      # Realistic dataset of internet assets
-/types              # Core TypeScript interfaces
-```
+NetScope is powered by a live discovery engine that performs real-world intelligence gathering:
+- **DNS Resolution**: Live resolution of domains to IP addresses.
+- **HTTP Fingerprinting**: Real-time header analysis from actual web servers.
+- **Live Geolocation**: Precise location data using real-world IP mapping APIs.
+- **Dynamic Indexing**: Discovered assets are indexed in real-time and correlated for graph visualization.
 
 ## Getting Started
 

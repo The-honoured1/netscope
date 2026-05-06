@@ -32,7 +32,7 @@ export default async function GraphPage() {
           
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-[10px] text-emerald-500 font-bold uppercase animate-pulse">
-              <Zap size={12} /> ENGINE: LIVE_SIMULATION
+              <Zap size={12} /> ENGINE: LIVE_DISCOVERY
             </div>
             <div className="flex gap-2">
               <button className="p-2 hover:bg-zinc-900 rounded border border-zinc-800 text-zinc-500">

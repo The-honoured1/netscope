@@ -45,7 +45,7 @@ export default async function LandingPage() {
           </h1>
           <p className="max-w-xl mx-auto text-zinc-500 text-sm md:text-base leading-relaxed">
             The next-generation internet asset intelligence platform. 
-            Discover, index, and enrich global infrastructure in real-time.
+            Real-time discovery, indexing, and enrichment of live global infrastructure.
           </p>
         </div>
 

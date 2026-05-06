@@ -10,12 +10,12 @@ export interface Service {
 }
 
 export interface Certificate {
-  issuer: string;
-  subject: string;
-  validFrom: string;
-  validTo: string;
-  serialNumber: string;
-  fingerprint: string;
+  issuer?: string;
+  subject?: string;
+  validFrom?: string;
+  validTo?: string;
+  serialNumber?: string;
+  fingerprint?: string;
 }
 
 export interface IntelligenceMetadata {

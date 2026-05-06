@@ -2,7 +2,7 @@ import React from 'react';
 import { SearchBar } from '@/components/Search/SearchBar';
 import { AssetCard } from '@/components/Asset/AssetCard';
 import { searchAssets } from '@/lib/searchEngine';
-import { Filter, Database, Globe, Shield, Activity } from 'lucide-react';
+import { Filter, Database, Globe, Shield, Activity, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function SearchPage({
@@ -28,7 +28,7 @@ export default async function SearchPage({
           <div className="flex items-center gap-6 text-[10px] uppercase tracking-widest text-zinc-500">
             <div className="flex flex-col items-end">
               <span className="text-emerald-500">STATUS: ACTIVE</span>
-              <span>INDEX: GLOBAL_V4</span>
+              <span>INDEX: LIVE_DISCOVERY</span>
             </div>
           </div>
         </div>
