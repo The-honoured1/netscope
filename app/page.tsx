@@ -29,8 +29,7 @@ export default async function LandingPage() {
         </div>
         <nav className="flex gap-8 text-[10px] uppercase tracking-widest font-bold">
           <Link href="/search" className="text-zinc-500 hover:text-emerald-400 transition-colors">DATABASE</Link>
-          <Link href="#" className="text-zinc-500 hover:text-emerald-400 transition-colors">API_DOCS</Link>
-          <Link href="#" className="text-zinc-500 hover:text-emerald-400 transition-colors">MONITOR</Link>
+          <Link href="/map" className="text-zinc-500 hover:text-emerald-400 transition-colors">WORLD_MAP</Link>
         </nav>
       </header>
 
