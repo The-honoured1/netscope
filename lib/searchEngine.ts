@@ -2,10 +2,10 @@ import { Asset } from '../types';
 import { mockAssets } from './mockData';
 import { enrichAsset } from './enrichment';
 
-export async function searchAssets(query: string = ''): Promise<Asset[]> {
+export async function searchAssets(query: string = '', filters: { serverType?: string; country?: string } = {}): Promise<Asset[]> {
   const normalizedQuery = query.toLowerCase().trim();
   
-  const results = mockAssets.filter(asset => {
+  let results = mockAssets.filter(asset => {
     if (!normalizedQuery) return true;
     
     return (
@@ -17,6 +17,10 @@ export async function searchAssets(query: string = ''): Promise<Asset[]> {
       asset.intelligence.serverType?.toLowerCase().includes(normalizedQuery)
     );
   });
+
+  if (filters.serverType) {
+    results = results.filter(a => a.intelligence.serverType?.toLowerCase() === filters.serverType?.toLowerCase());
+  }
 
   // Enrich results before returning
   return results.map(asset => enrichAsset(asset, mockAssets));

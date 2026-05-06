@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NetScope | Internet Asset Intelligence
+
+NetScope is a high-performance internet asset intelligence platform designed to discover, enrich, and map global infrastructure. It provides a structured search engine for exposed services, certificates, and IPs, with an advanced intelligence layer for relationship mapping.
+
+## Core Features
+
+- **Global Search Engine**: Command-style search across IPs, domains, server types, and tags.
+- **Intelligence Enrichment**: Automatic detection of server types, OS, and security risks from raw banners and headers.
+- **Infrastructure Clustering**: Automatically connects related assets based on SSL certificates, IP proximity, and shared domains.
+- **Cyber Intelligence Dashboard**: Data-dense UI for deep technical analysis of internet-exposed infrastructure.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript (Strict)
+- **Styling**: Tailwind CSS 4
+- **Icons**: Lucide React
+- **Animations**: Framer Motion
+
+## Project Structure
+
+```text
+/app
+  /api              # Route handlers for search and asset data
+  /search           # Search results page with filtering
+  /asset/[id]       # Deep dive asset detail page
+/components
+  /ui               # Shared UI primitives (TagBadge, etc.)
+  /Search           # Search-related components
+  /Asset            # Asset display components
+/lib
+  /enrichment.ts    # Intelligence and tagging logic
+  /searchEngine.ts  # Mock search engine and indexing
+  /mockData.ts      # Realistic dataset of internet assets
+/types              # Core TypeScript interfaces
+```
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Enrichment Logic
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+NetScope doesn't just show raw data. It processes every asset through:
+1. **Signature Detection**: Identifies software (Nginx, Apache, WordPress) from headers.
+2. **Risk Scoring**: Calculates a dynamic risk score based on open ports, expired SSLs, and outdated software.
+3. **Graphing**: Builds a relationship list by correlating certificate fingerprints and network subnets.

@@ -10,6 +10,14 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-mono relative overflow-hidden flex flex-col">
       {/* Background Effects */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/images/hero.png" 
+          alt="Hero Background" 
+          className="w-full h-full object-cover opacity-[0.03] mix-blend-screen"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505]" />
+      </div>
       <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
       

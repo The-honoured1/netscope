@@ -67,6 +67,27 @@ export default async function SearchPage({
             </div>
           </div>
 
+          <div className="p-4 rounded-lg border border-zinc-800 bg-zinc-900/20">
+            <h4 className="text-[10px] text-zinc-500 font-bold mb-4 uppercase flex items-center gap-2">
+              <Activity size={12} className="text-emerald-500" /> LIVE_ACTIVITY
+            </h4>
+            <div className="space-y-4">
+              {[
+                { event: 'PORT_SCAN', target: '192.168.1.12', time: '2s' },
+                { event: 'SSL_EXPIRED', target: '45.33.2.11', time: '12s' },
+                { event: 'NEW_ASSET', target: '104.21.32.1', time: '1m' },
+              ].map((ev, i) => (
+                <div key={i} className="text-[9px] border-l border-zinc-800 pl-2 py-0.5">
+                  <div className="flex justify-between text-zinc-500">
+                    <span>{ev.event}</span>
+                    <span>{ev.time}</span>
+                  </div>
+                  <div className="text-emerald-500/80">{ev.target}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="p-4 rounded-lg border border-emerald-900/20 bg-emerald-950/5">
             <h4 className="text-[10px] text-emerald-500 font-bold mb-2">SYSTEM ANALYTICS</h4>
             <div className="space-y-2 text-[10px]">
