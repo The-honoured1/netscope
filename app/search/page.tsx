@@ -116,6 +116,9 @@ export default async function SearchPage({
               <span className="text-emerald-500">SEARCH_TIME: 0.042s</span>
             </div>
             <div className="flex items-center gap-2">
+              <Link href="/graph" className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded border border-zinc-800 text-[10px] text-zinc-400 font-bold uppercase tracking-widest transition-all">
+                <Share2 size={12} className="text-emerald-500" /> GRAPH_MODE
+              </Link>
               <button className="p-1.5 hover:bg-zinc-900 rounded border border-zinc-800 text-zinc-500 hover:text-zinc-300">
                 <Database size={14} />
               </button>
