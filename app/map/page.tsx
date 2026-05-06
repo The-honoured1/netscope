@@ -1,8 +1,13 @@
 import React from 'react';
-import { WorldMap } from '@/components/Map/WorldMap';
+import dynamic from 'next/dynamic';
 import { searchAssets } from '@/lib/searchEngine';
 import Link from 'next/link';
 import { Search, Database, Globe } from 'lucide-react';
+
+const WorldMap = dynamic(() => import('@/components/Map/WorldMap').then(mod => mod.WorldMap), {
+  ssr: false,
+  loading: () => <div className="w-full h-[800px] flex items-center justify-center text-zinc-500">Initializing Globe...</div>
+});
 
 export default async function MapPage() {
   const assets = await searchAssets();

@@ -10,7 +10,7 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-mono relative overflow-hidden flex flex-col">
       {/* Background Effects */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <img 
           src="/images/hero.png" 
           alt="Hero Background" 

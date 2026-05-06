@@ -26,11 +26,22 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
     // 2. Geolocation (REAL DATA)
     let geoData: any = {};
     try {
-      const geoRes = await fetch(`http://ip-api.com/json/${ip}`, {
+      const geoRes = await fetch(`https://ipwho.is/${ip}`, {
         signal: AbortSignal.timeout(2000) // 2 second timeout
       });
       if (geoRes.ok) {
-        geoData = await geoRes.json();
+        const data = await geoRes.json();
+        if (data.success) {
+          geoData = {
+            as: `AS${data.connection.asn}`,
+            isp: data.connection.isp,
+            city: data.city,
+            country: data.country,
+            countryCode: data.country_code,
+            lat: data.latitude,
+            lon: data.longitude
+          };
+        }
       }
     } catch (e) {
       console.warn(`Geolocation failed for ${ip}, continuing without location data.`);
