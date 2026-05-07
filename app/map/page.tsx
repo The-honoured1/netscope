@@ -38,12 +38,20 @@ export default async function MapPage() {
         <WorldMapWrapper assets={assets} />
         
         {/* Legend */}
-        <div className="absolute bottom-6 left-6 bg-black/80 backdrop-blur-md border border-zinc-900 rounded-lg p-4 z-40">
-          <h4 className="text-[10px] font-bold text-zinc-500 mb-3 uppercase tracking-tighter">MAP LEGEND</h4>
-          <div className="space-y-2">
+        <div className="absolute bottom-6 left-6 bg-black/80 backdrop-blur-md border border-zinc-900 rounded-lg p-4 z-40 pointer-events-none">
+          <h4 className="text-[10px] font-bold text-zinc-500 mb-3 uppercase tracking-widest">MAP_INTELLIGENCE_LEGEND</h4>
+          <div className="space-y-3">
              <div className="flex items-center gap-3">
-               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-               <span className="text-[10px] uppercase text-zinc-400">DISCOVERED NODE</span>
+               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)] animate-pulse" />
+               <span className="text-[10px] uppercase text-zinc-400 font-bold tracking-tight">ACTIVE_INFRA_NODE</span>
+             </div>
+             <div className="flex items-center gap-3">
+               <div className="w-6 h-[1px] bg-emerald-500/30 border-t border-dashed border-emerald-500/50" />
+               <span className="text-[10px] uppercase text-zinc-400 font-bold tracking-tight">NETWORK_TRAFFIC_LINK</span>
+             </div>
+             <div className="flex items-center gap-3">
+               <div className="w-3 h-3 rounded-full border border-emerald-500/20 bg-emerald-500/5" />
+               <span className="text-[10px] uppercase text-zinc-500 font-bold tracking-tight">GEO_RELATION_CLUSTER</span>
              </div>
           </div>
         </div>
