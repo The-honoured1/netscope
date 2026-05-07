@@ -11,12 +11,7 @@ export const SearchBar = ({ initialValue = '' }: { initialValue?: string }) => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      const isDomain = query.includes('.') && !query.match(/^(\d{1,3}\.){3}\d{1,3}$/);
-      if (isDomain) {
-        router.push(`/domain/${encodeURIComponent(query.trim())}`);
-      } else {
-        router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-      }
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -29,7 +24,7 @@ export const SearchBar = ({ initialValue = '' }: { initialValue?: string }) => {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search IP, domain, server, or tags..."
+        placeholder="port:443 country:US org:google os:linux cve:CVE-2021..."
         className="w-full bg-zinc-900/50 border border-zinc-800 text-zinc-200 pl-12 pr-12 py-4 rounded-xl focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all font-mono text-sm placeholder:text-zinc-600 shadow-2xl"
       />
       <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">

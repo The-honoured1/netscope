@@ -9,12 +9,12 @@ import { useRouter } from 'next/navigation';
 import { Shield, Server, Activity, Search, Layers, Crosshair, Zap, AlertTriangle, Eye, Wifi, Thermometer, Globe, Cloud, Database, Cpu, MessageSquare, Terminal, Download, Flame, Map as MapIcon } from 'lucide-react';
 
 // Custom icons for different node types
-const getIcon = (tags: string[]) => {
-  let color = '#10b981'; // Default Emerald
-  if (tags.includes('scada')) color = '#f59e0b'; // Amber
-  if (tags.includes('malware')) color = '#ef4444'; // Red
-  if (tags.includes('honeypot')) color = '#8b5cf6'; // Purple
-  if (tags.includes('vulnerable')) color = '#f97316'; // Orange
+// Custom icons for different node types based on risk
+const getIcon = (asset: Asset) => {
+  const risk = asset.intelligence.riskScore || 0;
+  let color = '#10b981'; // Stable (Green)
+  if (risk > 70) color = '#ef4444'; // Critical (Red)
+  else if (risk > 30) color = '#f59e0b'; // Elevated (Amber)
 
   return L.divIcon({
     className: 'custom-div-icon',
@@ -64,14 +64,13 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const generateAIIntel = () => {
-    if (!selectedAsset) return;
-    setIsGeneratingAI(true);
-    setAiSummary(null);
-    setTimeout(() => {
-      setAiSummary(`ANALYSIS: Node ${selectedAsset.ip} shows characteristic behaviors of ${selectedAsset.intelligence.tags.includes('scada') ? 'Industrial Control Systems' : 'Cloud Infrastructure'}. Risk score ${selectedAsset.intelligence.riskScore} driven by exposed ${selectedAsset.services[0].name} service. Recommended Action: Isolate node and perform deep packet inspection.`);
-      setIsGeneratingAI(false);
-    }, 1500);
+  const getRiskFactors = (asset: Asset) => {
+    const factors = [];
+    if (asset.intelligence.tags.includes('expired-ssl')) factors.push('EXPIRED_SSL_CERT');
+    if (asset.intelligence.tags.includes('unencrypted-http')) factors.push('PLAIN_HTTP_EXPOSED');
+    if (asset.intelligence.tags.includes('ssh-exposed')) factors.push('SSH_PORT_OPEN');
+    if (asset.intelligence.tags.includes('vulnerable')) factors.push('KNOWN_CVE_DETECTED');
+    return factors.length > 0 ? factors : ['NO_CRITICAL_EXPOSURE'];
   };
 
   const exportGeoJSON = () => {
@@ -249,23 +248,38 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
                   </div>
                 </div>
 
-                {/* AI Intelligence Summary */}
-                <div className="bg-black/50 border border-zinc-800 p-2 rounded-sm">
-                  <div className="flex items-center gap-2 text-[8px] text-zinc-500 mb-2 uppercase font-bold">
-                    <Cpu size={10} className="text-emerald-500" /> AI_THREAT_SUMMARY
+                {/* Host Intelligence Panel */}
+                <div className="bg-black/50 border border-zinc-800 p-2 rounded-sm space-y-3">
+                  <div className="flex items-center gap-2 text-[8px] text-zinc-500 uppercase font-bold">
+                    <Cpu size={10} className="text-emerald-500" /> Host_Intelligence
                   </div>
-                  {aiSummary ? (
-                    <p className="text-[9px] text-zinc-400 leading-relaxed italic">"{aiSummary}"</p>
-                  ) : (
-                    <button 
-                      onClick={generateAIIntel}
-                      disabled={isGeneratingAI}
-                      className="w-full py-1.5 border border-zinc-800 text-[8px] text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/30 transition-all uppercase font-bold flex items-center justify-center gap-2"
-                    >
-                      {isGeneratingAI ? <Activity size={10} className="animate-spin" /> : <MessageSquare size={10} />}
-                      {isGeneratingAI ? 'PROCESSING...' : 'GENERATE_AI_SUMMARY'}
-                    </button>
-                  )}
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-[8px]">
+                      <span className="text-zinc-600 uppercase">Operating_System</span>
+                      <span className="text-zinc-300 font-bold uppercase">{selectedAsset.intelligence.os || 'Unknown'}</span>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="text-[7px] text-zinc-600 uppercase font-bold">Risk_Factors</div>
+                      <div className="flex flex-wrap gap-1">
+                        {getRiskFactors(selectedAsset).map(f => (
+                          <span key={f} className={`px-1.5 py-0.5 rounded-sm text-[7px] font-bold ${f === 'NO_CRITICAL_EXPOSURE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-zinc-800/50">
+                     <div className="text-[7px] text-zinc-600 uppercase font-bold mb-1">Active_Services ({selectedAsset.services.length})</div>
+                     <div className="flex flex-wrap gap-1">
+                        {selectedAsset.services.slice(0, 5).map(s => (
+                          <span key={s.port} className="text-[7px] text-zinc-400 bg-zinc-800 px-1 py-0.5 rounded-sm">{s.port}/{s.protocol}</span>
+                        ))}
+                     </div>
+                  </div>
                 </div>
 
                 <button 
@@ -335,14 +349,29 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
               
               <Marker 
                 position={[asset.location.latitude, asset.location.longitude]} 
-                icon={getIcon(asset.intelligence.tags)}
+                icon={getIcon(asset)}
                 eventHandlers={{
-                  click: () => { setSelectedAsset(asset); setAiSummary(null); }
+                  click: () => { setSelectedAsset(asset); }
                 }}
               >
                 <Popup className="netscope-popup" minWidth={240}>
-                   <div className="bg-zinc-950 p-2 text-[9px] font-mono text-zinc-500 uppercase border border-zinc-800">
-                      IP: <span className="text-white">{asset.ip}</span> | ASN: <span className="text-emerald-400">{asset.asn}</span>
+                   <div className="bg-zinc-950 p-3 text-[10px] font-mono border border-zinc-800">
+                      <div className="flex justify-between items-center mb-2 pb-2 border-b border-zinc-900">
+                        <span className="text-white font-bold">{asset.ip}</span>
+                        <span className={`px-1.5 py-0.5 rounded-sm font-black ${
+                          (asset.intelligence.riskScore || 0) > 70 ? 'bg-red-500 text-black' : 
+                          (asset.intelligence.riskScore || 0) > 30 ? 'bg-amber-500 text-black' : 
+                          'bg-emerald-500 text-black'
+                        }`}>
+                          RISK_{asset.intelligence.riskScore || 0}
+                        </span>
+                      </div>
+                      <div className="space-y-1 text-zinc-500">
+                        <div>ASN: <span className="text-emerald-400">{asset.asn}</span></div>
+                        <div>ISP: <span className="text-zinc-300">{asset.isp}</span></div>
+                        <div>SERVICES: <span className="text-amber-500">{asset.services.length} ACTIVE</span></div>
+                        {asset.intelligence.os && <div>OS: <span className="text-zinc-400">{asset.intelligence.os}</span></div>}
+                      </div>
                    </div>
                 </Popup>
               </Marker>
