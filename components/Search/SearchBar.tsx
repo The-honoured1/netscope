@@ -11,7 +11,12 @@ export const SearchBar = ({ initialValue = '' }: { initialValue?: string }) => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      const isDomain = query.includes('.') && !query.match(/^(\d{1,3}\.){3}\d{1,3}$/);
+      if (isDomain) {
+        router.push(`/domain/${encodeURIComponent(query.trim())}`);
+      } else {
+        router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      }
     }
   };
 
