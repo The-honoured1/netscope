@@ -12,7 +12,16 @@ const SEED_TARGETS = [
   'digitalocean.com', 'linode.com', 'microsoft.com', 'apple.com',
   'netflix.com', 'disney.com', 'tesla.com', 'nasa.gov',
   'cern.ch', 'mit.edu', 'stanford.edu', 'ox.ac.uk',
-  '1.1.1.1', '9.9.9.9', '4.2.2.2', '208.67.222.222'
+  '1.1.1.1', '9.9.9.9', '4.2.2.2', '208.67.222.222',
+  'akamai.com', 'fastly.com', 'vercel.com', 'heroku.com',
+  'slack.com', 'zoom.us', 'spotify.com', 'adobe.com',
+  'intel.com', 'cisco.com', 'ibm.com', 'oracle.com',
+  'comcast.net', 'att.com', 'verizon.com', 't-mobile.com',
+  'ovhcloud.com', 'hetzner.com', 'bluehost.com', 'godaddy.com',
+  'fbi.gov', 'cia.gov', 'dod.gov', 'whitehouse.gov',
+  'un.org', 'who.int', 'worldbank.org', 'imf.org',
+  'samsung.com', 'sony.com', 'toyota.co.jp', 'siemens.com',
+  'telegram.org', 'signal.org', 'proton.me', 'torproject.org'
 ];
 
 // Specialized Intelligence Categories
@@ -80,7 +89,7 @@ async function seed() {
   }
 
   // 2. Inject synthesized "verified historical" nodes to populate map/index
-  const historical = synthesizeHistoricalAssets(450);
+  const historical = synthesizeHistoricalAssets(1200);
   sessionIndex = [...sessionIndex, ...historical];
 }
 
