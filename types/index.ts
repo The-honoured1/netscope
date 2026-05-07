@@ -1,4 +1,4 @@
-export type Protocol = 'http' | 'https' | 'ssh' | 'ftp' | 'smtp' | 'dns';
+export type Protocol = 'http' | 'https' | 'ssh' | 'ftp' | 'smtp' | 'dns' | 'tcp' | 'udp';
 
 export interface Service {
   port: number;
@@ -23,6 +23,8 @@ export interface IntelligenceMetadata {
   os?: string;
   tags: string[];
   clusterId?: string;
+  riskScore?: number;
+  cves?: string[];
 }
 
 export interface Asset {

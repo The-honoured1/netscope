@@ -15,8 +15,8 @@ async function getCertificate(hostname: string, ip: string): Promise<Certificate
         socket.end();
         if (cert && cert.subject) {
           resolve({
-            issuer: cert.issuer?.O || cert.issuer?.CN || 'Unknown Issuer',
-            subject: cert.subject?.O || cert.subject?.CN || 'Unknown Subject',
+            issuer: (cert.issuer?.O || cert.issuer?.CN || 'Unknown Issuer').toString(),
+            subject: (cert.subject?.O || cert.subject?.CN || 'Unknown Subject').toString(),
             validFrom: cert.valid_from,
             validTo: cert.valid_to,
             serialNumber: cert.serialNumber,
@@ -71,7 +71,7 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
     let geoData: any = {};
     try {
       const geoRes = await fetch(`https://ipwho.is/${ip}`, {
-        signal: AbortSignal.timeout(2000) // 2 second timeout
+        signal: AbortSignal.timeout(2000)
       });
       if (geoRes.ok) {
         const data = await geoRes.json();
@@ -87,8 +87,27 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
           };
         }
       }
-    } catch (e) {
-      console.warn(`Geolocation failed for ${ip}, continuing without location data.`);
+    } catch (e) {}
+
+    // Fallback Geolocation
+    if (!geoData.city) {
+      try {
+        const fallRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,city,lat,lon,isp,as`, {
+          signal: AbortSignal.timeout(2000)
+        });
+        const data = await fallRes.json();
+        if (data.status === 'success') {
+          geoData = {
+            as: data.as?.split(' ')[0],
+            isp: data.isp,
+            city: data.city,
+            country: data.country,
+            countryCode: data.countryCode,
+            lat: data.lat,
+            lon: data.lon
+          };
+        }
+      } catch (e) {}
     }
 
     // 3. Service Discovery (Real-time HTTP Check)
@@ -127,7 +146,6 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
 
       certificate = await getCertificate(hostname, ip);
     } catch (e) {
-      // If full GET fails, maybe just the TLS connection works
       certificate = await getCertificate(hostname, ip);
       if (certificate) {
         services.push({
@@ -169,7 +187,7 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
       });
     } catch (e) {}
 
-    // Check Port 22 (SSH) Simulated/Basic check
+    // Check Port 22 (SSH)
     try {
       const net = await import('net');
       const sshPromise = new Promise<string>((resolve, reject) => {
@@ -208,7 +226,7 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
     if (services.some(s => s.port === 443)) tags.push('ssl-enabled');
     if (services.some(s => s.port === 22)) tags.push('ssh-exposed');
 
-    const asset: Asset = {
+    const rawAsset: Asset = {
       id: `live-${ip.replace(/\./g, '-')}`,
       ip,
       hostname: hostname || undefined,
@@ -231,10 +249,11 @@ export async function discoverAsset(target: string): Promise<Asset | null> {
       relatedAssetIds: []
     };
 
-    return asset;
+    // 5. Final Intelligence Enrichment
+    const { enrichAsset } = await import('./enrichment');
+    return enrichAsset(rawAsset);
   } catch (error) {
     console.error('Discovery failed:', error);
     return null;
   }
 }
-

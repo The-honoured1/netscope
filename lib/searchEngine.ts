@@ -138,8 +138,9 @@ export async function getAssetById(id: string): Promise<Asset | null> {
   if (!asset && id.startsWith('live-')) {
     const ip = id.replace('live-', '').replace(/-/g, '.');
     if (ip.match(/^(\d{1,3}\.){3}\d{1,3}$/)) {
-      asset = await discoverAsset(ip);
-      if (asset) {
+      const discovered = await discoverAsset(ip);
+      if (discovered) {
+        asset = discovered;
         sessionIndex.push(asset);
       }
     }
