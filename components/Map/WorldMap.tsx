@@ -113,8 +113,9 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
             case 'os': if (!asset.intelligence.os?.toLowerCase().includes(val)) return false; break;
             case 'cve': if (!asset.intelligence.cves?.some(c => c.toLowerCase().includes(val))) return false; break;
             case 'issuer': if (!asset.certificate?.issuer?.toLowerCase().includes(val)) return false; break;
-            case 'tag': if (!asset.intelligence.tags.some(t => t.toLowerCase().includes(val))) return false; break;
+            case 'tag': if (!asset.intelligence.tags.some(t => t.toLowerCase() === val)) return false; break;
             case 'protocol': if (!asset.services.some(s => s.protocol.toLowerCase() === val)) return false; break;
+            case 'cloud': if (!asset.intelligence.cloudProvider?.toLowerCase().includes(val)) return false; break;
             case 'risk': if ((asset.intelligence.riskScore || 0) < parseInt(val)) return false; break;
           }
         }

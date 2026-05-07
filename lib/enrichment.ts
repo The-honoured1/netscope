@@ -25,12 +25,35 @@ const INFRA_PATTERNS = [
   { isp: 'Microsoft Corporation', asn: 'AS8075', patterns: ['azure.com', 'microsoft.com', 'windows.net'] }
 ];
 
+/**
+ * Cloud Provider patterns
+ */
+const CLOUD_PATTERNS = [
+  { name: 'AWS', patterns: ['aws', 'amazon', 'compute.internal', 'compute.amazonaws.com'] },
+  { name: 'Google Cloud', patterns: ['google', 'googleusercontent', 'compute.googleapis.com', 'cloud.google.com'] },
+  { name: 'Azure', patterns: ['azure', 'microsoft', 'windows.net', 'cloudapp.azure.com'] },
+  { name: 'DigitalOcean', patterns: ['digitalocean', 'do.co'] },
+  { name: 'Cloudflare', patterns: ['cloudflare'] },
+  { name: 'Linode', patterns: ['linode'] },
+  { name: 'Hetzner', patterns: ['hetzner'] },
+  { name: 'Vultr', patterns: ['vultr'] },
+  { name: 'Oracle Cloud', patterns: ['oraclecloud', 'oracle'] }
+];
+
 export function detectOS(asset: Asset): string {
   const data = (asset.hostname || '' + asset.services.map(s => s.banner || '').join(' ')).toLowerCase();
   for (const os of OS_PATTERNS) {
     if (os.patterns.some(p => data.includes(p))) return os.name;
   }
   return 'Linux (Generic)'; // Default for most servers if unknown
+}
+
+export function detectCloudProvider(asset: Asset): string {
+  const data = (asset.hostname || '' + asset.isp || '' + asset.asn || '').toLowerCase();
+  for (const cloud of CLOUD_PATTERNS) {
+    if (cloud.patterns.some(p => data.includes(p))) return cloud.name;
+  }
+  return 'On-Prem'; // Default if no cloud patterns match
 }
 
 export function detectTags(asset: Asset): string[] {
@@ -156,7 +179,8 @@ export function enrichAsset(asset: Asset, allAssets: Asset[] = []): Asset {
       serverType,
       tags,
       riskScore: Math.min(riskScore, 100),
-      os
+      os,
+      cloudProvider: detectCloudProvider({ ...asset, hostname, isp, asn })
     },
     relatedAssetIds
   };
