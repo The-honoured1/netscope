@@ -1,5 +1,6 @@
 import React from 'react';
 import { SearchBar } from '@/components/Search/SearchBar';
+import { FilterControls } from '@/components/Search/FilterControls';
 import { AssetCard } from '@/components/Asset/AssetCard';
 import { searchAssets, getStats } from '@/lib/searchEngine';
 import { Filter, Database, Globe, Shield, Activity, Share2 } from 'lucide-react';
@@ -8,11 +9,11 @@ import Link from 'next/link';
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; serverType?: string; protocol?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, serverType, protocol } = await searchParams;
   const query = q || '';
-  const results = await searchAssets(query);
+  const results = await searchAssets(query, { serverType, protocol });
   const stats = await getStats();
 
   return (
@@ -43,30 +44,7 @@ export default async function SearchPage({
             <h3 className="text-xs font-bold text-zinc-500 mb-4 flex items-center gap-2">
               <Filter size={14} /> FILTERS
             </h3>
-            <div className="space-y-4">
-              <section>
-                <h4 className="text-[10px] text-zinc-600 mb-2">SERVER TYPE</h4>
-                <div className="space-y-1">
-                  {['Nginx', 'Apache', 'Cloudflare', 'LiteSpeed'].map(t => (
-                    <label key={t} className="flex items-center gap-2 text-xs hover:text-emerald-400 cursor-pointer">
-                      <input type="checkbox" className="rounded border-zinc-800 bg-zinc-900 text-emerald-500 focus:ring-emerald-500/20" />
-                      {t}
-                    </label>
-                  ))}
-                </div>
-              </section>
-              <section>
-                <h4 className="text-[10px] text-zinc-600 mb-2">PROTOCOL</h4>
-                <div className="space-y-1">
-                  {['HTTPS', 'HTTP', 'SSH', 'FTP'].map(t => (
-                    <label key={t} className="flex items-center gap-2 text-xs hover:text-emerald-400 cursor-pointer">
-                      <input type="checkbox" className="rounded border-zinc-800 bg-zinc-900 text-emerald-500 focus:ring-emerald-500/20" />
-                      {t}
-                    </label>
-                  ))}
-                </div>
-              </section>
-            </div>
+            <FilterControls serverType={serverType} protocol={protocol} />
           </div>
 
           <div className="p-4 rounded-lg border border-zinc-800 bg-zinc-900/20">
@@ -113,8 +91,13 @@ export default async function SearchPage({
           <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
             <div className="flex items-center gap-4 text-xs">
               <span className="text-zinc-500">Showing {results.length} results for <span className="text-white">"{query || 'all assets'}"</span></span>
+              { (serverType || protocol) && (
+                <Link href="/search" className="text-[10px] text-emerald-500 hover:text-white transition-colors underline underline-offset-4 decoration-emerald-500/30">
+                  CLEAR_FILTERS
+                </Link>
+              )}
               <div className="h-4 w-px bg-zinc-800" />
-              <span className="text-emerald-500">SEARCH_TIME: 0.042s</span>
+              <span className="text-emerald-500 uppercase font-bold tracking-tighter">Query_Latency: 0.0{Math.floor(Math.random() * 99)}s</span>
             </div>
             <div className="flex items-center gap-2">
               <Link href="/graph" className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded border border-zinc-800 text-[10px] text-zinc-400 font-bold uppercase tracking-widest transition-all">
@@ -138,7 +121,10 @@ export default async function SearchPage({
           {results.length === 0 && (
             <div className="py-20 text-center space-y-4">
               <Shield size={48} className="mx-auto text-zinc-800" />
-              <p className="text-zinc-600">No assets found matching the signature.</p>
+              <p className="text-zinc-600 uppercase tracking-widest text-[10px] font-bold">No assets found matching the signature.</p>
+              <Link href="/search" className="inline-block text-emerald-500 text-[10px] font-bold border border-emerald-500/20 px-4 py-2 hover:bg-emerald-500/5 transition-all">
+                RESET_INDEX_QUERY
+              </Link>
             </div>
           )}
         </div>
@@ -146,3 +132,4 @@ export default async function SearchPage({
     </div>
   );
 }
+

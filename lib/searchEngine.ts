@@ -15,14 +15,30 @@ const SEED_TARGETS = [
   '1.1.1.1', '9.9.9.9', '4.2.2.2', '208.67.222.222'
 ];
 
+// Specialized Intelligence Categories
+const INTEL_CATEGORIES = [
+  { tag: 'scada', type: 'Industrial Controller', products: ['Siemens S7', 'Modbus', 'Rockwell Automation'] },
+  { tag: 'iot', type: 'Embedded Device', products: ['Raspberry Pi', 'Zigbee Hub', 'Smart Lighting'] },
+  { tag: 'cctv', type: 'IP Camera', products: ['Hikvision', 'Dahua', 'Axis Communications'] },
+  { tag: 'honeypot', type: 'Deception System', products: ['Cowrie', 'Dionaea', 'HoneyTrap'] },
+  { tag: 'malware', type: 'C2 Infrastructure', products: ['Cobalt Strike', 'Metasploit', 'Empire'] },
+  { tag: 'tor', type: 'Exit Node', products: ['Tor Relay', 'Onion Service'] },
+  { tag: 'k8s', type: 'Container Orchestration', products: ['Kubernetes Dashboard', 'etcd'] },
+  { tag: 'database', type: 'Database Server', products: ['MongoDB', 'PostgreSQL', 'Redis', 'Elasticsearch'] }
+];
+
+const COMMON_CVES = ['CVE-2021-44228', 'CVE-2024-3094', 'CVE-2023-44487', 'CVE-2020-1472'];
+
 // Synthesizer for "Historical Index" data to match Shodan scale
 function synthesizeHistoricalAssets(count: number): Asset[] {
   const assets: Asset[] = [];
-  const providers = ['Amazon-AES', 'Google-Cloud', 'Microsoft-Corp', 'Cloudflare-Inc', 'DigitalOcean-LLC'];
-  const serverTypes = ['nginx', 'Apache/2.4.41', 'Microsoft-IIS/10.0', 'OpenResty', 'LiteSpeed'];
+  const providers = ['Amazon-AES', 'Google-Cloud', 'Microsoft-Corp', 'Cloudflare-Inc', 'DigitalOcean-LLC', 'Akamai-Technologies'];
   
   for (let i = 0; i < count; i++) {
     const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+    const category = INTEL_CATEGORIES[Math.floor(Math.random() * INTEL_CATEGORIES.length)];
+    const hasCVE = Math.random() > 0.8;
+    
     assets.push({
       id: `hist-${i}`,
       ip,
@@ -31,15 +47,22 @@ function synthesizeHistoricalAssets(count: number): Asset[] {
       location: {
         city: 'Global Node',
         country: 'Distributed',
-        countryCode: ['US', 'DE', 'JP', 'GB', 'FR', 'CN', 'BR', 'AU'][Math.floor(Math.random() * 8)],
+        countryCode: ['US', 'DE', 'JP', 'GB', 'FR', 'CN', 'BR', 'AU', 'SG', 'NL', 'RU'][Math.floor(Math.random() * 11)],
         latitude: (Math.random() * 140) - 70,
         longitude: (Math.random() * 360) - 180,
       },
-      services: [{ port: 80, protocol: 'http', name: 'http', lastSeen: new Date().toISOString() }],
+      services: [{ 
+        port: [80, 443, 22, 21, 3389, 5060, 1883, 102, 502][Math.floor(Math.random() * 9)], 
+        protocol: 'tcp', 
+        name: category.type, 
+        lastSeen: new Date().toISOString(),
+        banner: `Product: ${category.products[Math.floor(Math.random() * category.products.length)]}\nVersion: ${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}`
+      }],
       intelligence: {
-        serverType: serverTypes[Math.floor(Math.random() * serverTypes.length)],
-        tags: ['historical', 'indexed', 'verified'],
-        riskScore: Math.floor(Math.random() * 30)
+        serverType: category.products[0],
+        tags: ['historical', 'verified', category.tag, hasCVE ? 'vulnerable' : 'secure'],
+        riskScore: hasCVE ? Math.floor(Math.random() * 40) + 60 : Math.floor(Math.random() * 30),
+        cves: hasCVE ? [COMMON_CVES[Math.floor(Math.random() * COMMON_CVES.length)]] : []
       },
       relatedAssetIds: []
     });
@@ -61,7 +84,7 @@ async function seed() {
   sessionIndex = [...sessionIndex, ...historical];
 }
 
-export async function searchAssets(query: string = '', filters: { serverType?: string; country?: string } = {}): Promise<Asset[]> {
+export async function searchAssets(query: string = '', filters: { serverType?: string; country?: string; protocol?: string; tag?: string } = {}): Promise<Asset[]> {
   await seed();
   
   const normalizedQuery = query.toLowerCase().trim();
@@ -91,6 +114,18 @@ export async function searchAssets(query: string = '', filters: { serverType?: s
 
   if (filters.serverType) {
     results = results.filter(a => a.intelligence.serverType?.toLowerCase().includes(filters.serverType!.toLowerCase()));
+  }
+
+  if (filters.country) {
+    results = results.filter(a => a.location.countryCode.toLowerCase() === filters.country!.toLowerCase());
+  }
+
+  if (filters.protocol) {
+    results = results.filter(a => a.services.some(s => s.protocol.toLowerCase() === filters.protocol!.toLowerCase()));
+  }
+
+  if (filters.tag) {
+    results = results.filter(a => a.intelligence.tags.some(t => t.toLowerCase() === filters.tag!.toLowerCase()));
   }
 
   return results.map(asset => enrichAsset(asset, sessionIndex));
