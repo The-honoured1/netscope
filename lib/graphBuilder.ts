@@ -94,7 +94,7 @@ export function buildGraphData(assets: Asset[]): GraphData {
         nodesMap.set(certId, {
           id: certId,
           type: 'cert',
-          label: `Cert: ${asset.certificate.issuer.split(' ')[0]}`,
+          label: `Cert: ${asset.certificate.issuer?.split(' ')[0] || 'Unknown'}`,
           metadata: asset.certificate,
           val: 10
         });

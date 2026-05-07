@@ -13,7 +13,7 @@ const NODE_COLORS = {
 };
 
 export const IntelGraph = ({ data }: { data: any }) => {
-  const graphRef = useRef<ForceGraphMethods>();
+  const graphRef = useRef<ForceGraphMethods | undefined>(undefined);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [hoverNode, setHoverNode] = useState<any>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
