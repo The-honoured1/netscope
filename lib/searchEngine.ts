@@ -66,6 +66,7 @@ export async function searchAssets(query: string = '', filters: { serverType?: s
     if (token.includes(':')) {
       const [key, value] = token.split(':');
       switch (key) {
+        case 'ip': searchFilters.ip = value; break;
         case 'port': searchFilters.port = parseInt(value); break;
         case 'country': searchFilters.countryCode = value.toUpperCase(); break;
         case 'asn': searchFilters.asn = value.toUpperCase(); break;
@@ -102,12 +103,14 @@ export async function searchAssets(query: string = '', filters: { serverType?: s
 
   let results = sessionIndex.filter(asset => {
     // 1. Filter by specific advanced keys
+    if (searchFilters.ip && !asset.ip.includes(searchFilters.ip)) return false;
     if (searchFilters.port && !asset.services.some(s => s.port === searchFilters.port)) return false;
     if (searchFilters.countryCode && asset.location.countryCode !== searchFilters.countryCode) return false;
     if (searchFilters.asn && !asset.asn?.includes(searchFilters.asn)) return false;
     if (searchFilters.isp && !asset.isp?.toLowerCase().includes(searchFilters.isp.toLowerCase())) return false;
     if (searchFilters.cloud && !asset.isp?.toLowerCase().includes(searchFilters.cloud.toLowerCase())) return false;
     if (searchFilters.serverType && !asset.intelligence.serverType?.toLowerCase().includes(searchFilters.serverType.toLowerCase())) return false;
+    if (searchFilters.serviceName && !asset.services.some(s => s.name?.toLowerCase().includes(searchFilters.serviceName!.toLowerCase()))) return false;
     if (searchFilters.os && !asset.intelligence.os?.toLowerCase().includes(searchFilters.os.toLowerCase())) return false;
     if (searchFilters.cve && !asset.intelligence.cves?.some(c => c.includes(searchFilters.cve))) return false;
     if (searchFilters.issuer && !asset.certificate?.issuer?.toLowerCase().includes(searchFilters.issuer.toLowerCase())) return false;

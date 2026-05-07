@@ -39,6 +39,7 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [minRisk, setMinRisk] = useState(0);
 
   // Real-time Threat Feed State
   const [threatEvents, setThreatEvents] = useState<any[]>([]);
@@ -90,16 +91,60 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
     link.click();
   };
 
-  // Filtering logic
+  // Advanced Filtering logic
   const filteredAssets = useMemo(() => {
     return assets.filter(asset => {
-      const matchesSearch = asset.ip.includes(searchQuery) || 
-                          asset.intelligence.serverType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          asset.intelligence.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      // 1. Risk Filter
+      if ((asset.intelligence.riskScore || 0) < minRisk) return false;
+
+      // 2. Tab Filter
       const matchesTab = activeTab === 'all' || asset.intelligence.tags.includes(activeTab);
-      return matchesSearch && matchesTab;
+      if (!matchesTab) return false;
+
+      // 3. Advanced Search Filter
+      if (!searchQuery) return true;
+
+      const normalizedQuery = searchQuery.toLowerCase().trim();
+      const tokens = normalizedQuery.split(/\s+/);
+      
+      // If no advanced filters, do broad search
+      if (!tokens.some(t => t.includes(':'))) {
+        return (
+          asset.ip.includes(normalizedQuery) ||
+          asset.hostname?.toLowerCase().includes(normalizedQuery) ||
+          asset.domain?.toLowerCase().includes(normalizedQuery) ||
+          asset.isp?.toLowerCase().includes(normalizedQuery) ||
+          asset.intelligence.tags.some(t => t.toLowerCase().includes(normalizedQuery)) ||
+          asset.intelligence.serverType?.toLowerCase().includes(normalizedQuery)
+        );
+      }
+
+      // Advanced filters in map search
+      for (const token of tokens) {
+        if (token.includes(':')) {
+          const [key, value] = token.split(':');
+          const val = value.toLowerCase();
+          switch (key) {
+            case 'ip': if (!asset.ip.includes(val)) return false; break;
+            case 'port': if (!asset.services.some(s => s.port.toString() === val)) return false; break;
+            case 'country': if (asset.location.countryCode.toLowerCase() !== val) return false; break;
+            case 'asn': if (!asset.asn?.toLowerCase().includes(val)) return false; break;
+            case 'org': if (!asset.isp?.toLowerCase().includes(val)) return false; break;
+            case 'product': if (!asset.intelligence.serverType?.toLowerCase().includes(val)) return false; break;
+            case 'service': if (!asset.services.some(s => s.name?.toLowerCase().includes(val))) return false; break;
+            case 'os': if (!asset.intelligence.os?.toLowerCase().includes(val)) return false; break;
+            case 'cve': if (!asset.intelligence.cves?.some(c => c.toLowerCase().includes(val))) return false; break;
+            case 'issuer': if (!asset.certificate?.issuer?.toLowerCase().includes(val)) return false; break;
+            case 'tag': if (!asset.intelligence.tags.some(t => t.toLowerCase().includes(val))) return false; break;
+            case 'protocol': if (!asset.services.some(s => s.protocol.toLowerCase() === val)) return false; break;
+            case 'risk': if ((asset.intelligence.riskScore || 0) < parseInt(val)) return false; break;
+          }
+        }
+      }
+
+      return true;
     });
-  }, [assets, searchQuery, activeTab]);
+  }, [assets, searchQuery, activeTab, minRisk]);
 
   // Compute networking lines connecting related assets
   const networkLinks = useMemo(() => {
@@ -129,6 +174,22 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
       {/* Advanced Map Sidebar */}
       <div className="w-80 h-full bg-zinc-950/90 backdrop-blur-xl border-r border-zinc-900 z-[1000] p-4 flex flex-col gap-6 overflow-y-auto relative">
         <div className="space-y-4">
+          <div className="space-y-2">
+            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+              <span className="flex items-center gap-2"><Shield size={12} /> Risk_Threshold</span>
+              <span className="text-emerald-500">{minRisk}+</span>
+            </h4>
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              step="5"
+              value={minRisk}
+              onChange={(e) => setMinRisk(parseInt(e.target.value))}
+              className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+            />
+          </div>
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
             <input 

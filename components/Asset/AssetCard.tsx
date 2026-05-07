@@ -17,17 +17,24 @@ export const AssetCard = ({ asset }: { asset: Asset }) => {
               {asset.ip}
             </Link>
             {asset.hostname && (
-              <Link 
-                href={`/search?q=hostname:${asset.hostname}`} 
-                className="text-[10px] text-zinc-500 font-mono mt-1 break-words hover:text-emerald-500 hover:underline"
-              >
-                {asset.hostname}
-              </Link>
+              <div className="flex flex-wrap gap-x-1 items-center mt-1">
+                {asset.hostname.split('.').map((part, i, arr) => (
+                  <React.Fragment key={i}>
+                    <Link 
+                      href={`/search?q=hostname:${arr.slice(i).join('.')}`} 
+                      className="text-[10px] text-zinc-500 font-mono hover:text-emerald-500 hover:underline"
+                    >
+                      {part}
+                    </Link>
+                    {i < arr.length - 1 && <span className="text-[8px] text-zinc-700">.</span>}
+                  </React.Fragment>
+                ))}
+              </div>
             )}
-            {asset.domain && (
+            {asset.domain && asset.domain !== asset.hostname && (
               <Link 
                 href={`/search?q=${asset.domain}`} 
-                className="text-[10px] text-zinc-400 font-mono mt-1 break-words hover:text-emerald-500 hover:underline font-bold"
+                className="text-[10px] text-zinc-400 font-mono mt-1 break-words hover:text-emerald-500 hover:underline font-bold border-t border-zinc-800/50 pt-1"
               >
                 {asset.domain}
               </Link>
