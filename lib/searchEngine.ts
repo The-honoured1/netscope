@@ -38,59 +38,17 @@ const INTEL_CATEGORIES = [
 
 const COMMON_CVES = ['CVE-2021-44228', 'CVE-2024-3094', 'CVE-2023-44487', 'CVE-2020-1472'];
 
-// Synthesizer for "Historical Index" data to match Shodan scale
-function synthesizeHistoricalAssets(count: number): Asset[] {
-  const assets: Asset[] = [];
-  const providers = ['Amazon-AES', 'Google-Cloud', 'Microsoft-Corp', 'Cloudflare-Inc', 'DigitalOcean-LLC', 'Akamai-Technologies'];
-  
-  for (let i = 0; i < count; i++) {
-    const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-    const category = INTEL_CATEGORIES[Math.floor(Math.random() * INTEL_CATEGORIES.length)];
-    const hasCVE = Math.random() > 0.8;
-    
-    assets.push({
-      id: `hist-${i}`,
-      ip,
-      asn: `AS${Math.floor(Math.random() * 65535)}`,
-      isp: providers[Math.floor(Math.random() * providers.length)],
-      location: {
-        city: 'Global Node',
-        country: 'Distributed',
-        countryCode: ['US', 'DE', 'JP', 'GB', 'FR', 'CN', 'BR', 'AU', 'SG', 'NL', 'RU'][Math.floor(Math.random() * 11)],
-        latitude: (Math.random() * 140) - 70,
-        longitude: (Math.random() * 360) - 180,
-      },
-      services: [{ 
-        port: [80, 443, 22, 21, 3389, 5060, 1883, 102, 502][Math.floor(Math.random() * 9)], 
-        protocol: 'tcp', 
-        name: category.type, 
-        lastSeen: new Date().toISOString(),
-        banner: `Product: ${category.products[Math.floor(Math.random() * category.products.length)]}\nVersion: ${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}`
-      }],
-      intelligence: {
-        serverType: category.products[0],
-        tags: ['historical', 'verified', category.tag, hasCVE ? 'vulnerable' : 'secure'],
-        riskScore: hasCVE ? Math.floor(Math.random() * 40) + 60 : Math.floor(Math.random() * 30),
-        cves: hasCVE ? [COMMON_CVES[Math.floor(Math.random() * COMMON_CVES.length)]] : []
-      },
-      relatedAssetIds: []
-    });
-  }
-  return assets;
-}
+// Note: Synthetic generator removed to maintain data integrity.
+// Use discoverAsset(target) to populate the index with real data.
 
 async function seed() {
   if (sessionIndex.length > 0) return;
   
-  // 1. Discover real core nodes
+  // Discover real core nodes to provide a starting point
   for (const target of SEED_TARGETS) {
     const asset = await discoverAsset(target);
     if (asset) sessionIndex.push(asset);
   }
-
-  // 2. Inject synthesized "verified historical" nodes to populate map/index
-  const historical = synthesizeHistoricalAssets(1200);
-  sessionIndex = [...sessionIndex, ...historical];
 }
 
 export async function searchAssets(query: string = '', filters: { serverType?: string; country?: string; protocol?: string; tag?: string } = {}): Promise<Asset[]> {
@@ -98,10 +56,44 @@ export async function searchAssets(query: string = '', filters: { serverType?: s
   
   const normalizedQuery = query.toLowerCase().trim();
   
-  // If the query is a new domain/IP, discover it live!
-  if (normalizedQuery && !sessionIndex.some(a => a.ip === normalizedQuery || a.domain === normalizedQuery)) {
-    if (normalizedQuery.includes('.') || normalizedQuery.match(/^\d/)) {
-      const liveAsset = await discoverAsset(normalizedQuery);
+  // Advanced Query Parser (Shodan-style)
+  // Example: "port:443 country:US nginx"
+  const tokens = normalizedQuery.split(/\s+/);
+  const searchFilters: any = { ...filters };
+  let searchTerms: string[] = [];
+
+  tokens.forEach(token => {
+    if (token.includes(':')) {
+      const [key, value] = token.split(':');
+      switch (key) {
+        case 'port': searchFilters.port = parseInt(value); break;
+        case 'country': searchFilters.countryCode = value.toUpperCase(); break;
+        case 'asn': searchFilters.asn = value.toUpperCase(); break;
+        case 'org': 
+        case 'organization': searchFilters.isp = value; break;
+        case 'product': searchFilters.serverType = value; break;
+        case 'service': searchFilters.serviceName = value; break;
+        case 'os': searchFilters.os = value; break;
+        case 'cve': searchFilters.cve = value.toUpperCase(); break;
+        case 'issuer': searchFilters.issuer = value; break;
+        case 'hostname': searchFilters.hostname = value; break;
+        case 'tag': searchFilters.tag = value; break;
+        case 'protocol': searchFilters.protocol = value; break;
+        case 'cloud': searchFilters.cloud = value; break;
+        case 'risk': searchFilters.minRisk = parseInt(value); break;
+        default: searchTerms.push(token);
+      }
+    } else {
+      searchTerms.push(token);
+    }
+  });
+
+  const finalSearchTerm = searchTerms.join(' ');
+  
+  // Live discovery for new targets
+  if (finalSearchTerm && !sessionIndex.some(a => a.ip === finalSearchTerm || a.domain === finalSearchTerm)) {
+    if (finalSearchTerm.includes('.') || finalSearchTerm.match(/^\d/)) {
+      const liveAsset = await discoverAsset(finalSearchTerm);
       if (liveAsset) {
         sessionIndex.push(liveAsset);
       }
@@ -109,33 +101,33 @@ export async function searchAssets(query: string = '', filters: { serverType?: s
   }
 
   let results = sessionIndex.filter(asset => {
-    if (!normalizedQuery) return true;
+    // 1. Filter by specific advanced keys
+    if (searchFilters.port && !asset.services.some(s => s.port === searchFilters.port)) return false;
+    if (searchFilters.countryCode && asset.location.countryCode !== searchFilters.countryCode) return false;
+    if (searchFilters.asn && !asset.asn?.includes(searchFilters.asn)) return false;
+    if (searchFilters.isp && !asset.isp?.toLowerCase().includes(searchFilters.isp.toLowerCase())) return false;
+    if (searchFilters.cloud && !asset.isp?.toLowerCase().includes(searchFilters.cloud.toLowerCase())) return false;
+    if (searchFilters.serverType && !asset.intelligence.serverType?.toLowerCase().includes(searchFilters.serverType.toLowerCase())) return false;
+    if (searchFilters.os && !asset.intelligence.os?.toLowerCase().includes(searchFilters.os.toLowerCase())) return false;
+    if (searchFilters.cve && !asset.intelligence.cves?.some(c => c.includes(searchFilters.cve))) return false;
+    if (searchFilters.issuer && !asset.certificate?.issuer?.toLowerCase().includes(searchFilters.issuer.toLowerCase())) return false;
+    if (searchFilters.hostname && !asset.hostname?.toLowerCase().includes(searchFilters.hostname.toLowerCase())) return false;
+    if (searchFilters.tag && !asset.intelligence.tags.some(t => t.toLowerCase() === searchFilters.tag.toLowerCase())) return false;
+    if (searchFilters.protocol && !asset.services.some(s => s.protocol.toLowerCase() === searchFilters.protocol.toLowerCase())) return false;
+    if (searchFilters.minRisk && (asset.intelligence.riskScore || 0) < searchFilters.minRisk) return false;
+
+    // 2. Filter by general search term
+    if (!finalSearchTerm) return true;
     
     return (
-      asset.ip.includes(normalizedQuery) ||
-      asset.hostname?.toLowerCase().includes(normalizedQuery) ||
-      asset.domain?.toLowerCase().includes(normalizedQuery) ||
-      asset.isp?.toLowerCase().includes(normalizedQuery) ||
-      asset.intelligence.tags.some(tag => tag.toLowerCase().includes(normalizedQuery)) ||
-      asset.intelligence.serverType?.toLowerCase().includes(normalizedQuery)
+      asset.ip.includes(finalSearchTerm) ||
+      asset.hostname?.toLowerCase().includes(finalSearchTerm) ||
+      asset.domain?.toLowerCase().includes(finalSearchTerm) ||
+      asset.isp?.toLowerCase().includes(finalSearchTerm) ||
+      asset.intelligence.tags.some(tag => tag.toLowerCase().includes(finalSearchTerm)) ||
+      asset.intelligence.serverType?.toLowerCase().includes(finalSearchTerm)
     );
   });
-
-  if (filters.serverType) {
-    results = results.filter(a => a.intelligence.serverType?.toLowerCase().includes(filters.serverType!.toLowerCase()));
-  }
-
-  if (filters.country) {
-    results = results.filter(a => a.location.countryCode.toLowerCase() === filters.country!.toLowerCase());
-  }
-
-  if (filters.protocol) {
-    results = results.filter(a => a.services.some(s => s.protocol.toLowerCase() === filters.protocol!.toLowerCase()));
-  }
-
-  if (filters.tag) {
-    results = results.filter(a => a.intelligence.tags.some(t => t.toLowerCase() === filters.tag!.toLowerCase()));
-  }
 
   return results.map(asset => enrichAsset(asset, sessionIndex));
 }
@@ -163,14 +155,14 @@ export async function getStats() {
   await seed();
   const enriched = sessionIndex.map(a => enrichAsset(a, sessionIndex));
   const countries = [...new Set(enriched.map(a => a.location.countryCode))];
+  const serviceCount = enriched.reduce((acc, a) => acc + a.services.length, 0);
   
   return {
-    // Shodan-scale numbers for the dashboard
-    total: "4,821,492,108",
+    total: enriched.length.toLocaleString(),
     liveCount: enriched.length,
-    services: "12,940,112",
-    countries: 194,
+    services: serviceCount.toLocaleString(),
+    countries: countries.length,
     activeDiscovery: sessionIndex.length,
-    tags: Array.from(new Set(enriched.flatMap(a => a.intelligence.tags))).slice(0, 10)
+    tags: Array.from(new Set(enriched.flatMap(a => a.intelligence.tags))).slice(0, 15)
   };
 }

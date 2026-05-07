@@ -11,32 +11,66 @@ export const AssetCard = ({ asset }: { asset: Asset }) => {
     <div className="bg-zinc-900/30 border border-zinc-800 rounded-sm flex flex-col md:flex-row overflow-hidden transition-all hover:border-zinc-700">
       {/* Left Column: Asset Info */}
       <div className="w-full md:w-64 p-4 border-b md:border-b-0 md:border-r border-zinc-800 flex-shrink-0 flex flex-col space-y-4 bg-zinc-950/50">
-        <div>
-          <Link href={`/asset/${asset.id}`} className="text-[#f44336] hover:text-red-400 text-lg font-bold font-mono transition-colors">
-            {asset.ip}
-          </Link>
-          {asset.hostname && (
-            <div className="text-xs text-zinc-500 font-mono mt-1 break-words">{asset.hostname}</div>
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col">
+            <Link href={`/asset/${asset.id}`} className="text-[#f44336] hover:text-red-400 text-lg font-bold font-mono transition-colors">
+              {asset.ip}
+            </Link>
+            {asset.hostname && (
+              <Link 
+                href={`/search?q=hostname:${asset.hostname}`} 
+                className="text-[10px] text-zinc-500 font-mono mt-1 break-words hover:text-emerald-500 hover:underline"
+              >
+                {asset.hostname}
+              </Link>
+            )}
+            {asset.domain && (
+              <Link 
+                href={`/search?q=${asset.domain}`} 
+                className="text-[10px] text-zinc-400 font-mono mt-1 break-words hover:text-emerald-500 hover:underline font-bold"
+              >
+                {asset.domain}
+              </Link>
+            )}
+          </div>
+          
+          {asset.intelligence.riskScore !== undefined && (
+            <div className="flex flex-col items-end">
+              <div className={`text-xs font-black px-2 py-1 rounded-sm border ${
+                asset.intelligence.riskScore > 75 ? 'bg-red-500/10 border-red-500 text-red-500' :
+                asset.intelligence.riskScore > 40 ? 'bg-amber-500/10 border-amber-500 text-amber-500' :
+                'bg-emerald-500/10 border-emerald-500 text-emerald-500'
+              }`}>
+                {asset.intelligence.riskScore}
+              </div>
+              <span className="text-[7px] text-zinc-600 mt-1 uppercase font-bold tracking-widest">RISK_INDEX</span>
+            </div>
           )}
         </div>
         
-        <div className="text-xs font-mono space-y-1">
-          <div className="font-bold text-zinc-300">{asset.isp}</div>
-          {asset.asn && <div className="text-zinc-500">{asset.asn}</div>}
+        <div className="text-xs font-mono space-y-1 pt-2 border-t border-zinc-800/50">
+          <Link href={`/search?q=org:${encodeURIComponent(asset.isp || '')}`} className="font-bold text-zinc-300 hover:text-emerald-400 block">
+            {asset.isp}
+          </Link>
+          {asset.asn && (
+            <Link href={`/search?q=asn:${asset.asn}`} className="text-zinc-500 hover:text-zinc-300 block">
+              {asset.asn}
+            </Link>
+          )}
         </div>
 
         <div className="text-xs font-mono space-y-1 flex flex-col">
-          <span className="text-zinc-500">Location</span>
-          <span className="text-zinc-300 flex items-center gap-2">
+          <span className="text-zinc-500 text-[10px] uppercase">Location</span>
+          <Link href={`/search?q=country:${asset.location.countryCode}`} className="text-zinc-300 flex items-center gap-2 hover:text-white group">
             {asset.location.countryCode && (
               <img 
                 src={`https://flagcdn.com/16x12/${asset.location.countryCode.toLowerCase()}.png`} 
                 alt={asset.location.countryCode}
-                className="opacity-80"
+                className="opacity-80 group-hover:opacity-100"
               />
             )}
             {asset.location.city}, {asset.location.country}
-          </span>
+          </Link>
         </div>
 
         {asset.services.length > 0 && (

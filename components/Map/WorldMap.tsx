@@ -40,22 +40,29 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
 
-  // Live Threat Feed State
-  const [threatEvents, setThreatEvents] = useState<{ id: number; msg: string; type: string }[]>([]);
+  // Real-time Threat Feed State
+  const [threatEvents, setThreatEvents] = useState<any[]>([]);
+  const [activeThreats, setActiveThreats] = useState<any[]>([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const types = ['SCAN', 'EXPLOIT_ATTEMPT', 'DNS_QUERY', 'C2_BEACON'];
-      const ips = assets.slice(0, 20).map(a => a.ip);
-      const newEvent = {
-        id: Date.now(),
-        msg: `${types[Math.floor(Math.random() * types.length)]} detected from ${ips[Math.floor(Math.random() * ips.length)]}`,
-        type: types[Math.floor(Math.random() * types.length)]
-      };
-      setThreatEvents(prev => [newEvent, ...prev].slice(0, 10));
-    }, 4000);
+    const fetchThreats = async () => {
+      try {
+        const res = await fetch('/api/threats');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setThreatEvents(data);
+          // Only show threats that have geolocation on the map
+          setActiveThreats(data.filter(t => t.location));
+        }
+      } catch (e) {
+        console.error("Failed to load real threats", e);
+      }
+    };
+
+    fetchThreats();
+    const interval = setInterval(fetchThreats, 30000); // Refresh every 30s
     return () => clearInterval(interval);
-  }, [assets]);
+  }, []);
 
   const generateAIIntel = () => {
     if (!selectedAsset) return;
@@ -202,12 +209,21 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
           <h4 className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
             <Activity size={12} className="animate-pulse" /> LIVE_THREAT_FEED
           </h4>
-          <div className="space-y-2 max-h-32 overflow-hidden">
-            {threatEvents.map(event => (
-              <div key={event.id} className="text-[8px] text-zinc-500 border-l border-zinc-800 pl-2 animate-in fade-in slide-in-from-left duration-500">
-                <span className="text-emerald-500/50">[{new Date(event.id).toLocaleTimeString()}]</span> {event.msg}
-              </div>
-            ))}
+          <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
+            {threatEvents.length > 0 ? (
+              threatEvents.map(event => (
+                <div key={event.id} className="text-[8px] border-l-2 border-red-500 bg-red-500/5 p-2 animate-in fade-in slide-in-from-left duration-500">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-red-500 font-bold uppercase">{event.type}</span>
+                    <span className="text-zinc-600 text-[7px]">{event.source}</span>
+                  </div>
+                  <div className="text-zinc-300 font-bold">{event.ip}</div>
+                  <div className="text-zinc-500 text-[7px] truncate">{event.location?.city}, {event.location?.countryCode}</div>
+                </div>
+              ))
+            ) : (
+              <div className="text-[8px] text-zinc-600 italic">Synchronizing with global threat index...</div>
+            )}
           </div>
         </div>
 
@@ -332,6 +348,41 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
               </Marker>
             </React.Fragment>
           ))}
+
+          {/* VERIFIED REAL THREATS */}
+          {activeThreats.map((threat) => (
+            <React.Fragment key={`threat-${threat.id}`}>
+               <CircleMarker
+                  center={[threat.location.latitude, threat.location.longitude]}
+                  pathOptions={{ 
+                    color: '#ef4444', 
+                    fillOpacity: 0.2, 
+                    weight: 2 
+                  }}
+                  radius={20}
+                  className="pulse-signal-threat"
+                />
+                <Marker 
+                  position={[threat.location.latitude, threat.location.longitude]} 
+                  icon={L.divIcon({
+                    className: 'threat-marker',
+                    html: `<div class='threat-node animate-pulse'></div>`,
+                    iconSize: [12, 12]
+                  })}
+                >
+                  <Popup className="netscope-popup threat-popup" minWidth={200}>
+                    <div className="bg-red-950/90 p-2 text-[10px] font-mono border border-red-500 text-white">
+                      <div className="text-red-500 font-black mb-1 flex items-center gap-2">
+                        <AlertTriangle size={12} /> VERIFIED_THREAT
+                      </div>
+                      <div className="mb-1">IOC: <span className="text-red-400">{threat.ip}</span></div>
+                      <div className="mb-1">TYPE: {threat.type}</div>
+                      <div className="text-[8px] text-red-500/70">SOURCE: {threat.source}</div>
+                    </div>
+                  </Popup>
+                </Marker>
+            </React.Fragment>
+          ))}
         </MapContainer>
       </div>
 
@@ -370,6 +421,24 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
         @keyframes pulse-signal-anim {
           0% { r: 5; opacity: 0.8; }
           100% { r: 40; opacity: 0; }
+        }
+
+        .pulse-signal-threat {
+          animation: pulse-threat-anim 1.5s infinite ease-out;
+        }
+
+        @keyframes pulse-threat-anim {
+          0% { r: 2; opacity: 1; stroke-width: 4; }
+          100% { r: 35; opacity: 0; stroke-width: 1; }
+        }
+
+        .threat-node {
+          width: 12px;
+          height: 12px;
+          background: #ef4444;
+          border-radius: 50%;
+          box-shadow: 0 0 15px #ef4444;
+          border: 2px solid #fff;
         }
 
         @keyframes scan {
