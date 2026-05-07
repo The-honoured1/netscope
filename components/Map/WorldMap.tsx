@@ -41,29 +41,7 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [minRisk, setMinRisk] = useState(0);
 
-  // Real-time Threat Feed State
-  const [threatEvents, setThreatEvents] = useState<any[]>([]);
-  const [activeThreats, setActiveThreats] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchThreats = async () => {
-      try {
-        const res = await fetch('/api/threats');
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setThreatEvents(data);
-          // Only show threats that have geolocation on the map
-          setActiveThreats(data.filter(t => t.location));
-        }
-      } catch (e) {
-        console.error("Failed to load real threats", e);
-      }
-    };
-
-    fetchThreats();
-    const interval = setInterval(fetchThreats, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
-  }, []);
+  // Real-time Threat Feed State removed as per request
 
   const getRiskFactors = (asset: Asset) => {
     const factors = [];
@@ -264,28 +242,6 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
           </div>
         </div>
 
-        {/* Live Threat Feed */}
-        <div className="border-t border-zinc-900 pt-4">
-          <h4 className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-            <Activity size={12} className="animate-pulse" /> LIVE_THREAT_FEED
-          </h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
-            {threatEvents.length > 0 ? (
-              threatEvents.map(event => (
-                <div key={event.id} className="text-[8px] border-l-2 border-red-500 bg-red-500/5 p-2 animate-in fade-in slide-in-from-left duration-500">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-red-500 font-bold uppercase">{event.type}</span>
-                    <span className="text-zinc-600 text-[7px]">{event.source}</span>
-                  </div>
-                  <div className="text-zinc-300 font-bold">{event.ip}</div>
-                  <div className="text-zinc-500 text-[7px] truncate">{event.location?.city}, {event.location?.countryCode}</div>
-                </div>
-              ))
-            ) : (
-              <div className="text-[8px] text-zinc-600 italic">Synchronizing with global threat index...</div>
-            )}
-          </div>
-        </div>
 
         {/* Selected Host Panel */}
         {selectedAsset ? (
@@ -309,37 +265,70 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
                   </div>
                 </div>
 
-                {/* Host Intelligence Panel */}
-                <div className="bg-black/50 border border-zinc-800 p-2 rounded-sm space-y-3">
-                  <div className="flex items-center gap-2 text-[8px] text-zinc-500 uppercase font-bold">
-                    <Cpu size={10} className="text-emerald-500" /> Host_Intelligence
+                <div className="bg-black/50 border border-zinc-800 p-3 rounded-sm space-y-4 overflow-hidden">
+                  <div className="flex items-center gap-2 text-[10px] text-zinc-500 uppercase font-black">
+                    <Cpu size={12} className="text-emerald-500" /> Host_Detailed_Intel
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-[8px]">
-                      <span className="text-zinc-600 uppercase">Operating_System</span>
-                      <span className="text-zinc-300 font-bold uppercase">{selectedAsset.intelligence.os || 'Unknown'}</span>
-                    </div>
-                    
+                  <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-1">
-                      <div className="text-[7px] text-zinc-600 uppercase font-bold">Risk_Factors</div>
+                      <div className="text-[8px] text-zinc-600 uppercase font-bold">Organization</div>
+                      <div className="text-zinc-200 text-[10px] truncate">{selectedAsset.isp || 'Unknown'}</div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <div className="text-[8px] text-zinc-600 uppercase font-bold">ASN</div>
+                        <div className="text-emerald-500 text-[10px] font-bold">{selectedAsset.asn}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[8px] text-zinc-600 uppercase font-bold">Cloud</div>
+                        <div className="text-zinc-300 text-[10px]">{selectedAsset.intelligence.cloudProvider || 'On-Prem'}</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="text-[8px] text-zinc-600 uppercase font-bold">SSL_Issuer</div>
+                      <div className="text-zinc-400 text-[8px] truncate bg-zinc-900/50 p-1 border border-zinc-800/50">
+                        {selectedAsset.certificate?.issuer || 'NO_SSL_CERT'}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="text-[8px] text-zinc-600 uppercase font-bold">Risk_Factors</div>
                       <div className="flex flex-wrap gap-1">
                         {getRiskFactors(selectedAsset).map(f => (
-                          <span key={f} className={`px-1.5 py-0.5 rounded-sm text-[7px] font-bold ${f === 'NO_CRITICAL_EXPOSURE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                          <span key={f} className={`px-1.5 py-0.5 rounded-sm text-[7px] font-bold border ${f === 'NO_CRITICAL_EXPOSURE' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
                             {f}
                           </span>
                         ))}
                       </div>
                     </div>
-                  </div>
 
-                  <div className="pt-2 border-t border-zinc-800/50">
-                     <div className="text-[7px] text-zinc-600 uppercase font-bold mb-1">Active_Services ({selectedAsset.services.length})</div>
-                     <div className="flex flex-wrap gap-1">
-                        {selectedAsset.services.slice(0, 5).map(s => (
-                          <span key={s.port} className="text-[7px] text-zinc-400 bg-zinc-800 px-1 py-0.5 rounded-sm">{s.port}/{s.protocol}</span>
+                    <div className="space-y-1">
+                      <div className="text-[8px] text-zinc-600 uppercase font-bold">Exposed_CVEs</div>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedAsset.intelligence.cves && selectedAsset.intelligence.cves.length > 0 ? (
+                          selectedAsset.intelligence.cves.map(cve => (
+                            <span key={cve} className="bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded-sm text-[8px] font-bold border border-red-500/20">{cve}</span>
+                          ))
+                        ) : (
+                          <span className="text-zinc-600 text-[8px]">NONE_DETECTED</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="text-[8px] text-zinc-600 uppercase font-bold">Active_Infrastructure</div>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedAsset.services.map(s => (
+                          <div key={s.port} className="flex flex-col bg-zinc-900 p-1.5 border border-zinc-800 rounded-sm min-w-[60px]">
+                            <span className="text-amber-500 text-[9px] font-black">{s.port}/{s.protocol}</span>
+                            <span className="text-zinc-500 text-[7px] uppercase truncate">{s.name}</span>
+                          </div>
                         ))}
-                     </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -416,10 +405,10 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
                 }}
               >
                 <Popup className="netscope-popup" minWidth={240}>
-                   <div className="bg-zinc-950 p-3 text-[10px] font-mono border border-zinc-800">
-                      <div className="flex justify-between items-center mb-2 pb-2 border-b border-zinc-900">
-                        <span className="text-white font-bold">{asset.ip}</span>
-                        <span className={`px-1.5 py-0.5 rounded-sm font-black ${
+                    <div className="bg-zinc-950 p-4 text-[10px] font-mono border border-zinc-800 shadow-2xl min-w-[300px]">
+                      <div className="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+                        <span className="text-emerald-500 font-black text-xs">{asset.ip}</span>
+                        <span className={`px-2 py-0.5 rounded-sm font-black text-[9px] ${
                           (asset.intelligence.riskScore || 0) > 70 ? 'bg-red-500 text-black' : 
                           (asset.intelligence.riskScore || 0) > 30 ? 'bg-amber-500 text-black' : 
                           'bg-emerald-500 text-black'
@@ -427,52 +416,80 @@ export const WorldMap = ({ assets }: { assets: Asset[] }) => {
                           RISK_{asset.intelligence.riskScore || 0}
                         </span>
                       </div>
-                      <div className="space-y-1 text-zinc-500">
-                        <div>ASN: <span className="text-emerald-400">{asset.asn}</span></div>
-                        <div>ISP: <span className="text-zinc-300">{asset.isp}</span></div>
-                        <div>SERVICES: <span className="text-amber-500">{asset.services.length} ACTIVE</span></div>
-                        {asset.intelligence.os && <div>OS: <span className="text-zinc-400">{asset.intelligence.os}</span></div>}
+                      
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-zinc-400">
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">Hostname</span>
+                          <span className="truncate text-zinc-200">{asset.hostname || 'N/A'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">Country</span>
+                          <span className="text-zinc-200">{asset.location.countryCode} ({asset.location.country})</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">ASN</span>
+                          <span className="text-emerald-400 font-bold">{asset.asn || 'Unknown'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">Organization</span>
+                          <span className="truncate text-zinc-200">{asset.isp || 'Unknown'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">Product</span>
+                          <span className="text-zinc-200">{asset.intelligence.serverType || 'N/A'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">OS</span>
+                          <span className="text-zinc-200">{asset.intelligence.os || 'Unknown'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">Cloud_Provider</span>
+                          <span className="text-zinc-200">{asset.intelligence.cloudProvider || 'On-Prem'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-zinc-600 font-black uppercase">SSL_Issuer</span>
+                          <span className="truncate text-zinc-200 text-[8px]">{asset.certificate?.issuer || 'N/A'}</span>
+                        </div>
                       </div>
-                   </div>
+
+                      <div className="mt-3 pt-2 border-t border-zinc-900">
+                        <div className="text-[8px] text-zinc-600 font-black uppercase mb-1">Services_&_Protocols</div>
+                        <div className="flex flex-wrap gap-1">
+                          {asset.services.map(s => (
+                            <span key={s.port} className="bg-zinc-900 border border-zinc-800 text-amber-500 px-1.5 py-0.5 rounded-sm text-[8px]">
+                              {s.port}/{s.protocol} ({s.name})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {asset.intelligence.cves && asset.intelligence.cves.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-[8px] text-zinc-600 font-black uppercase mb-1">CVE_EXPOSURE</div>
+                          <div className="flex flex-wrap gap-1">
+                            {asset.intelligence.cves.slice(0, 3).map(cve => (
+                              <span key={cve} className="bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded-sm text-[8px] font-bold border border-red-500/20">
+                                {cve}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-2">
+                        <div className="text-[8px] text-zinc-600 font-black uppercase mb-1">Tags</div>
+                        <div className="flex flex-wrap gap-1">
+                          {asset.intelligence.tags.map(tag => (
+                            <span key={tag} className="text-zinc-500 text-[8px] uppercase font-bold">#{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                 </Popup>
               </Marker>
             </React.Fragment>
           ))}
 
-          {/* VERIFIED REAL THREATS */}
-          {activeThreats.map((threat) => (
-            <React.Fragment key={`threat-${threat.id}`}>
-               <CircleMarker
-                  center={[threat.location.latitude, threat.location.longitude]}
-                  pathOptions={{ 
-                    color: '#ef4444', 
-                    fillOpacity: 0.2, 
-                    weight: 2 
-                  }}
-                  radius={20}
-                  className="pulse-signal-threat"
-                />
-                <Marker 
-                  position={[threat.location.latitude, threat.location.longitude]} 
-                  icon={L.divIcon({
-                    className: 'threat-marker',
-                    html: `<div class='threat-node animate-pulse'></div>`,
-                    iconSize: [12, 12]
-                  })}
-                >
-                  <Popup className="netscope-popup threat-popup" minWidth={200}>
-                    <div className="bg-red-950/90 p-2 text-[10px] font-mono border border-red-500 text-white">
-                      <div className="text-red-500 font-black mb-1 flex items-center gap-2">
-                        <AlertTriangle size={12} /> VERIFIED_THREAT
-                      </div>
-                      <div className="mb-1">IOC: <span className="text-red-400">{threat.ip}</span></div>
-                      <div className="mb-1">TYPE: {threat.type}</div>
-                      <div className="text-[8px] text-red-500/70">SOURCE: {threat.source}</div>
-                    </div>
-                  </Popup>
-                </Marker>
-            </React.Fragment>
-          ))}
         </MapContainer>
       </div>
 

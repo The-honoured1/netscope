@@ -25,6 +25,7 @@ export interface IntelligenceMetadata {
   clusterId?: string;
   riskScore?: number;
   cves?: string[];
+  cloudProvider?: string;
 }
 
 export interface Asset {
